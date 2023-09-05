@@ -1,0 +1,11 @@
+Path,PID,Sex,Age,Frontal/Lateral,AP/PA,Atelectasis,Consolidation,Pneumothorax,Edema,Pneumonia,Cardiomegaly
+/absolute/path/to/image,1,Male,57,Frontal,PA,0.0,0.0,0.0,0.0,0.0,1.0
+/absolute/path/to/image,1,Male,58,Frontal,PA,0.0,0.0,0.0,0.0,0.0,1.0
+/absolute/path/to/image,1,Male,58,Frontal,PA,0.0,0.0,0.0,0.0,0.0,1.0
+/absolute/path/to/image,2,Male,80,Frontal,PA,0.0,0.0,0.0,0.0,0.0,0.0
+/absolute/path/to/image,3,Female,74,Frontal,PA,0.0,0.0,0.0,0.0,0.0,0.0
+/absolute/path/to/image,3,Female,75,Frontal,PA,0.0,0.0,0.0,0.0,0.0,0.0
+/absolute/path/to/image,3,Female,76,Frontal,PA,0.0,0.0,0.0,0.0,0.0,0.0
+/absolute/path/to/image,3,Female,77,Frontal,PA,0.0,0.0,0.0,0.0,0.0,0.0
+/absolute/path/to/image,3,Female,78,Frontal,PA,0.0,0.0,0.0,0.0,0.0,0.0
+/absolute/path/to/image,3,Female,79,Frontal,PA,0.0,0.0,0.0,0.0,0.0,0.0

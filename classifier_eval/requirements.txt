@@ -1,0 +1,16 @@
+# General packages
+pandas
+numpy
+tqdm
+argparse
+
+# Custom packages
+git+https://github.com/BardiaKh/PytorchUtils.git#egg=bkh_pytorch_utils
+
+# Machine Learning packages
+monai
+pytorch_lightning
+timm
+
+# PyTorch and related
+# Note: PyTorch must be installed manually using the given command
