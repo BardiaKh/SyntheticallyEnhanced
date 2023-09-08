@@ -12,6 +12,7 @@ import torch
 import pytorch_lightning as pl
 import timm
 from tqdm.auto import tqdm
+from sklearn.metrics import roc_auc_score
 
 def get_data_dict(df, base_path, pathology_list):
     data_dict = list()
@@ -40,19 +41,20 @@ class ClassifierModule(bpu.BKhModule):
 def main():
     parser = argparse.ArgumentParser(description="Set up evaluation config.")
     parser.add_argument("input", type=str, default=None, help="Absolute path to CSV file containing formatted data.")
-    parser.add_argument("--output", type=str, default="./results.csv", help="Name of the output csv file containing inference results.")
-    parser.add_argument("--bs", type=int, default=32, help="Batch size for dataloader creation.")
-    parser.add_argument("--workers", type=int, default=4, help="Number of CPU workers for dataloader creation.")
-    parser.add_argument("--base_path", type=str, default=None, help="If the image paths in your input csv are relative to a base path, specify it here.")
-    parser.add_argument("--cuda_id", type=int, default=0, help="The device ID of the cuda card on which you would like to run inference.")
-    parser.add_argument("--cache_dir", type=str, default="./cache", help="The directory in which to store cached data.")
+    parser.add_argument("-o", "--output", type=str, default="./results.csv", help="Name of the output CSV file containing inference results.")
+    parser.add_argument("-b", "--batch_size", type=int, default=32, help="Batch size for dataloader creation.")
+    parser.add_argument("-w", "--workers", type=int, default=4, help="Number of CPU workers for dataloader creation.")
+    parser.add_argument("-p", "--base_path", type=str, default=None, help="If the image paths in your input CSV are relative to a base path, specify it here.")
+    parser.add_argument("-c", "--cuda_id", type=int, default=0, help="The device ID of the CUDA card on which you would like to run inference.")
+    parser.add_argument("-d", "--cache_dir", type=str, default="./cache", help="The directory in which to store cached data.")
+    parser.add_argument("-a", "--auc_report", action="store_true", help="Flag to generate AUC reports. (output file will be Excel rather than CSV)")
     args = parser.parse_args()
 
     PATHOLOGIES = ['Pleural Other', 'Fracture', 'Support Devices','Pleural Effusion','Pneumothorax','Atelectasis','Pneumonia','Consolidation', 'Edema','Lung Lesion', 'Lung Opacity', 'Cardiomegaly','Enlarged Cardiomediastinum', 'No Finding'] # , 
     WEIGHTS_PATH = './weights'
     IMG_SIZE = 256
     CACHE_DIR = args.cache_dir
-    BATCH_SIZE = args.bs
+    BATCH_SIZE = args.batch_size
     NUM_DL_WORKERS = args.workers
     BASE_PATH = args.base_path
     CSV_SAVE_PATH = args.output
@@ -134,7 +136,36 @@ def main():
                     })
 
     results_df = pd.DataFrame(results_dict)
-    results_df.to_csv(CSV_SAVE_PATH, index=False)
+
+    if args.auc_report:
+        auc_dict = {}
+        
+        for model_name in results_df['Model Name'].unique():
+            model_results = results_df[results_df['Model Name'] == model_name]
+            auc_dict[model_name] = {}
+            
+            macro_auc_list = []
+            
+            for pidx, pathology in enumerate(PATHOLOGIES):
+                if pathology in df.columns:
+                    true_labels = model_results['Labels'].apply(lambda x: x[pidx])
+                    pred_scores = model_results['Probs'].apply(lambda x: x[pidx])
+                    auc_score = roc_auc_score(true_labels, pred_scores)
+                    auc_dict[model_name][pathology] = auc_score
+                    macro_auc_list.append(auc_score)
+            
+            # Calculate macro-averaged AUC for this model
+            macro_auc = sum(macro_auc_list) / len(macro_auc_list)
+            auc_dict[model_name]['Overall (Macro)'] = macro_auc
+        
+        # Convert the nested dictionary to a DataFrame
+        auc_df = pd.DataFrame(auc_dict).transpose().reset_index().rename(columns={"index": "Model Name"})
+        
+        with pd.ExcelWriter(CSV_SAVE_PATH.replace('.csv', '.xlsx')) as writer:
+            results_df.to_excel(writer, sheet_name='Inference Results', index=False)
+            auc_df.to_excel(writer, sheet_name='AUC Report', index=False)
+    else:
+        results_df.to_csv(CSV_SAVE_PATH, index=False)
 
     print("\n","Cleaning  cache directory...", "\n")
 
