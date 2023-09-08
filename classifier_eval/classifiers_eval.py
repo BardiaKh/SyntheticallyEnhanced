@@ -108,7 +108,11 @@ def main():
 
     results_dict = []
 
-    weights = glob(f"{WEIGHTS_PATH}/*/*.ckpt")
+    if len(PATHOLOGIES) == 14:
+        weights = glob(f"{WEIGHTS_PATH}/*/*.ckpt")
+    else:
+        weights = glob(f"{WEIGHTS_PATH}/*|{','.join(PATHOLOGIES)}/*.ckpt")
+        
     for i, weight in enumerate(weights):
         model_name = "-".join(weight.split('/')[-2:]).split('_')[0]
         model.load_ckpt(weight, ema=True)
