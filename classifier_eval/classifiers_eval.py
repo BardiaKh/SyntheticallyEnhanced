@@ -47,10 +47,14 @@ def main():
     parser.add_argument("-p", "--base_path", type=str, default=None, help="If the image paths in your input CSV are relative to a base path, specify it here.")
     parser.add_argument("-c", "--cuda_id", type=int, default=0, help="The device ID of the CUDA card on which you would like to run inference.")
     parser.add_argument("-d", "--cache_dir", type=str, default="./cache", help="The directory in which to store cached data.")
+    parser.add_argument("-t", "--pathologies", type=str, default="all", help="Comma-separated list of pathologies to handle. Defaults to 'all'.")
     parser.add_argument("-a", "--auc_report", action="store_true", help="Flag to generate AUC reports. (output file will be Excel rather than CSV)")
     args = parser.parse_args()
 
-    PATHOLOGIES = ['Pleural Other', 'Fracture', 'Support Devices','Pleural Effusion','Pneumothorax','Atelectasis','Pneumonia','Consolidation', 'Edema','Lung Lesion', 'Lung Opacity', 'Cardiomegaly','Enlarged Cardiomediastinum', 'No Finding'] # , 
+    if args.pathologies.lower() == 'all':
+        PATHOLOGIES = ['Pleural Other', 'Fracture', 'Support Devices','Pleural Effusion','Pneumothorax','Atelectasis','Pneumonia','Consolidation', 'Edema','Lung Lesion', 'Lung Opacity', 'Cardiomegaly','Enlarged Cardiomediastinum', 'No Finding']
+    else:
+        PATHOLOGIES = [path.strip() for path in args.pathologies.split(',')]
     WEIGHTS_PATH = './weights'
     IMG_SIZE = 256
     CACHE_DIR = args.cache_dir
