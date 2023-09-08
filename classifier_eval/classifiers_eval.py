@@ -80,6 +80,7 @@ def main():
 
     transforms=mn.transforms.Compose([
         mn.transforms.LoadImageD(keys="img", ensure_channel_first=True),
+        bpu.EnsureGrayscaleD(keys="img"),
         mn.transforms.ResizeD(keys='img', size_mode="longest", mode="bilinear", spatial_size=IMG_SIZE, align_corners=False),
         mn.transforms.ScaleIntensityRangePercentilesD(keys="img", lower=0, upper=100, b_min=-1, b_max=1, clip=True),
         mn.transforms.SpatialPadD(keys='img', spatial_size=(IMG_SIZE, IMG_SIZE), mode="constant", constant_values=-1),
@@ -112,7 +113,7 @@ def main():
         weights = glob(f"{WEIGHTS_PATH}/*/*.ckpt")
     else:
         weights = glob(f"{WEIGHTS_PATH}/*|{','.join(PATHOLOGIES)}/*.ckpt")
-        
+
     for i, weight in enumerate(weights):
         model_name = "-".join(weight.split('/')[-2:]).split('_')[0]
         model.load_ckpt(weight, ema=True)
