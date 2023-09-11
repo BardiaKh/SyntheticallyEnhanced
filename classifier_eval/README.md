@@ -82,4 +82,4 @@ Here is a list of the possible arguments you can provide and their effects on th
 
 * `-t` or `--pathologies`: Specifies a comma-separated list of pathologies for the model to handle. If this flag is not set, the model will handle all 14 predefined pathologies. Example: `--pathologies Pleural Other,Fracture,Pneumonia` or `-t Pleural Other,Fracture,Pneumonia`.
 
-* `-a` or `--auc_report`: Flag to generate AUC reports. If this flag is set, the output file will be an Excel workbook with two sheets: one for the inference results and another for the AUC scores.
+* `-a` or `--auc_report`: Flag to generate AUC reports. If this flag is set, the output file will be a seperate csv file, with the `_auc` suffix.

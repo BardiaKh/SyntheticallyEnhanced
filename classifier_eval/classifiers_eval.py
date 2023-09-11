@@ -171,9 +171,8 @@ def main():
         # Convert the nested dictionary to a DataFrame
         auc_df = pd.DataFrame(auc_dict).transpose().reset_index().rename(columns={"index": "Model Name"})
         
-        with pd.ExcelWriter(CSV_SAVE_PATH.replace('.csv', '.xlsx')) as writer:
-            results_df.to_excel(writer, sheet_name='Inference Results', index=False)
-            auc_df.to_excel(writer, sheet_name='AUC Report', index=False)
+        results_df.to_csv(CSV_SAVE_PATH, index=False)
+        auc_df.to_csv(CSV_SAVE_PATH.replace('.csv', '_auc.csv'), index=False)
     else:
         results_df.to_csv(CSV_SAVE_PATH, index=False)
 
