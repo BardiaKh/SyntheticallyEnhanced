@@ -79,7 +79,7 @@ def main():
     data_dict = get_data_dict(df, base_path=BASE_PATH, pathology_list=PATHOLOGIES)
 
     transforms=mn.transforms.Compose([
-        mn.transforms.LoadImageD(keys="img", ensure_channel_first=True),
+        mn.transforms.LoadImageD(keys="img", ensure_channel_first=False),
         bpu.EnsureGrayscaleD(keys="img"),
         mn.transforms.ResizeD(keys='img', size_mode="longest", mode="bilinear", spatial_size=IMG_SIZE, align_corners=False),
         mn.transforms.ScaleIntensityRangePercentilesD(keys="img", lower=0, upper=100, b_min=-1, b_max=1, clip=True),
@@ -111,6 +111,7 @@ def main():
 
     if len(PATHOLOGIES) == 14:
         weights = glob(f"{WEIGHTS_PATH}/*/*.ckpt")
+        weights = [weight for weight in weights if '|' not in weight]
     else:
         weights = glob(f"{WEIGHTS_PATH}/*|{','.join(PATHOLOGIES)}/*.ckpt")
 
