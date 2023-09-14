@@ -56,30 +56,44 @@ Our program accepts a `.csv` file as input. A sample schema for this file can be
 **Note**: The file location column should be named `Path`. Also, make sure the column names are *case sensitive*.
 
 ### Step 2: Run Inference
-To run inference with our model, you will need to execute the `classifiers_eval.py` file. You must provide the required positional argument `input`, as well as any number of optional arguments. Below is an example of a terminal command you could run to get inference results:
+
+To run inference with our model, you will need to execute the `classifiers_eval.py` file. Configuration details are now provided using a YAML file.
+
+#### YAML Configuration Fields:
+
+* `input`: **Required** field containing the absolute path to your formatted `.csv` file.
+
+* `output`: Specifies the name of the output file in which to save inference results. Defaults to `./results.csv`.
+
+* `batch_size`: Specifies the batch size for inference. Defaults to `32`.
+
+* `workers`: Specifies the number of CPU workers in the dataloader. Defaults to `4`.
+
+* `base_path`: Specifies the absolute path of the location to which your image paths are relative. Defaults to `None`.
+
+* `cuda_id`: Specifies the ID of the GPU on which you would like to run inference. Defaults to `0`.
+
+* `cache_dir`: Specifies the directory in which to store cached data (will be removed after inference). Defaults to `./cache`.
+
+* `pathologies`: Specifies a comma-separated list of pathologies for the model to handle. If this field is set to `"all"`, the model will handle all 14 predefined pathologies. Example: `"Pleural Other,Fracture,Pneumonia"`.
+
+* `report_auc`: If set to `true`, the output AUC report file will be a seperate csv file, with the `_auc` suffix. Defaults to `true`.
+
+* `weight_folders`: **Required** field. A list of paths where the model weights are stored. You can specify multiple directories. For example:
+    ```yaml
+    weight_folders:
+      - "/path/to/weights_folder1"
+      - "/path/to/weights_folder2"
+    ```
+
+**Important Note**: All relative paths will be calculated from the `config.yaml` file location. If not desired, please pass absolute paths.
+
+#### Running the Code:
+
+To run the inference with the provided configuration file, use the following terminal command:
 
 ```bash
-python classifiers_eval.py /absolute/path/to/input.csv -o results.csv -w 8 -c 3 -a
+python classifiers_eval.py config.yaml
 ```
 
-Here is a list of the possible arguments you can provide and their effects on the inference script:
-
-* `input` is a **required** positional argument containing the absolute path to your formatted `.csv` file.
-
-### Optional Arguments
-
-* `-o` or `--output`: Specifies the name of the output file in which to save inference results. Defaults to `./results.csv`.
-
-* `-b` or `--bs`: Specifies the batch size for inference. Defaults to `32`.
-
-* `-w` or `--workers`: Specifies the number of CPU workers in the dataloader. Defaults to `4`.
-
-* `-p` or `--base_path`: Specifies the absolute path of the location to which your image paths are relative. Defaults to `None`.
-
-* `-c` or `--cuda_id`: Specifies the ID of the GPU on which you would like to run inference. Defaults to `0`.
-
-* `-d` or `--cache_dir`: Specifies the directory in which to store cached data (will be removed after inference). Defaults to `./cache`.
-
-* `-t` or `--pathologies`: Specifies a comma-separated list of pathologies for the model to handle. If this flag is not set, the model will handle all 14 predefined pathologies. Example: `--pathologies Pleural Other,Fracture,Pneumonia` or `-t Pleural Other,Fracture,Pneumonia`.
-
-* `-a` or `--auc_report`: Flag to generate AUC reports. If this flag is set, the output file will be a seperate csv file, with the `_auc` suffix.
+Where `config.yaml` is the path to your configuration file containing all the above details.

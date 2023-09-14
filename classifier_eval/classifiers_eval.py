@@ -11,10 +11,90 @@ import bkh_pytorch_utils as bpu
 import torch
 import pytorch_lightning as pl
 import timm
+import yaml
 from tqdm.auto import tqdm
 from sklearn.metrics import roc_auc_score
 
+DEFAULT_CONFIG = {
+    "batch_size": 32,
+    "workers": 4,
+    "base_path": None,
+    "output": "./results.csv",
+    "cuda_id": 0,
+    "pathologies": "all",
+    "report_auc": True,
+    "weight_folders": [],
+    "cache_dir": "./cache",
+    "input": None
+}
+
+def load_config(file_path, default_config):
+    """
+    Load a YAML configuration file and merge it with the default configuration.
+
+    Args:
+    - file_path (str): The path to the YAML configuration file.
+    - default_config (dict): The default configuration.
+
+    Returns:
+    - dict: The merged configuration.
+    """
+    with open(file_path, 'r') as f:
+        config = yaml.safe_load(f)
+        
+    # Merge the loaded configuration with the default values
+    for key, default_value in default_config.items():
+        config[key] = config.get(key, default_value)
+    
+    return config
+
+def parse_path(path_to_parse, config_file_path):
+    """
+    Parse a given path and return it. If the path is relative, return it relative to the config file's location.
+
+    Args:
+    - path_to_parse (str): The path to be parsed.
+    - config_file_path (str): The path to the config.yaml file.
+
+    Returns:
+    - str: The absolute path.
+    """
+    if os.path.isabs(path_to_parse):
+        return path_to_parse
+
+    config_dir = os.path.dirname(config_file_path)
+    return os.path.join(config_dir, path_to_parse)
+    
+def get_weights_from_folders(weight_folders, config_path):
+    """
+    Get a list of weights from a list of folders.
+
+    Args:
+    - weight_folders (list): A list of folders containing weights.
+    - config_path (str): The path to the config.yaml file.
+
+    Returns:
+    - list: A list of weights.
+    """
+    weights = []
+    for folder in weight_folders:
+        folder = parse_path(folder, config_path)
+        weights.extend(glob(f"{folder}/*.ckpt"))
+        
+    return weights
+
 def get_data_dict(df, base_path, pathology_list):
+    """
+    Get a list of data dictionaries from a dataframe.
+
+    Args:
+    - df (pandas.DataFrame): The dataframe containing the data.
+    - base_path (str): The base path to the data.
+    - pathology_list (list): A list of pathologies to include in the data dictionary.
+
+    Returns:
+    - list: A list of data dictionaries.
+    """
     data_dict = list()
     for i in tqdm(range(len(df)), desc="Loading data"):
         row = df.iloc[i]
@@ -40,34 +120,28 @@ class ClassifierModule(bpu.BKhModule):
 
 def main():
     parser = argparse.ArgumentParser(description="Set up evaluation config.")
-    parser.add_argument("input", type=str, default=None, help="Absolute path to CSV file containing formatted data.")
-    parser.add_argument("-o", "--output", type=str, default="./results.csv", help="Name of the output CSV file containing inference results.")
-    parser.add_argument("-b", "--batch_size", type=int, default=32, help="Batch size for dataloader creation.")
-    parser.add_argument("-w", "--workers", type=int, default=4, help="Number of CPU workers for dataloader creation.")
-    parser.add_argument("-p", "--base_path", type=str, default=None, help="If the image paths in your input CSV are relative to a base path, specify it here.")
-    parser.add_argument("-c", "--cuda_id", type=int, default=0, help="The device ID of the CUDA card on which you would like to run inference.")
-    parser.add_argument("-d", "--cache_dir", type=str, default="./cache", help="The directory in which to store cached data.")
-    parser.add_argument("-t", "--pathologies", type=str, default="all", help="Comma-separated list of pathologies to handle. Defaults to 'all'.")
-    parser.add_argument("-a", "--auc_report", action="store_true", help="Flag to generate AUC reports. (output file will be Excel rather than CSV)")
+    parser.add_argument("yaml_config", type=str, help="Path to the YAML configuration file.")
     args = parser.parse_args()
 
-    if args.pathologies.lower() == 'all':
-        PATHOLOGIES = ['Pleural Other', 'Fracture', 'Support Devices','Pleural Effusion','Pneumothorax','Atelectasis','Pneumonia','Consolidation', 'Edema','Lung Lesion', 'Lung Opacity', 'Cardiomegaly','Enlarged Cardiomediastinum', 'No Finding']
-    else:
-        PATHOLOGIES = [path.strip() for path in args.pathologies.split(',')]
-    WEIGHTS_PATH = './weights'
+    config_path = args.yaml_config
+    config = load_config(config_path, DEFAULT_CONFIG)
+
     IMG_SIZE = 256
-    CACHE_DIR = args.cache_dir
-    BATCH_SIZE = args.batch_size
-    NUM_DL_WORKERS = args.workers
-    BASE_PATH = args.base_path
-    CSV_SAVE_PATH = args.output
-    CUDA_ID = args.cuda_id
+    INPUT_FILE = parse_path(config["input"], config_path)
+    CACHE_DIR = parse_path(config["cache_dir"], config_path)
+    BATCH_SIZE = config["batch_size"]
+    NUM_DL_WORKERS = config["workers"]
+    BASE_PATH = parse_path(config["base_path"], config_path)
+    CSV_SAVE_PATH = parse_path(config["output"], config_path)
+    CUDA_ID = config["cuda_id"]
+    PATHOLOGIES = config["pathologies"] if config["pathologies"] != 'all' else ['Pleural Other', 'Fracture', 'Support Devices','Pleural Effusion','Pneumothorax','Atelectasis','Pneumonia','Consolidation', 'Edema','Lung Lesion', 'Lung Opacity', 'Cardiomegaly','Enlarged Cardiomediastinum', 'No Finding']
+    REPORT_AUC = config["report_auc"]
+    WEIGHT_FOLDERS = config["weight_folders"]
 
     print(
         "\n",
         "*"*100, "\n",
-        f"Running inference on {args.input} with batch size {BATCH_SIZE} and {NUM_DL_WORKERS} workers on CUDA:{CUDA_ID}.", "\n",
+        f"Running inference on {INPUT_FILE} with batch size {BATCH_SIZE} and {NUM_DL_WORKERS} workers on CUDA:{CUDA_ID}.", "\n",
         "*"*100, "\n",
         "\n"
     )
@@ -75,15 +149,16 @@ def main():
     os.environ["CUDA_VISIBLE_DEVICES"] = f"{CUDA_ID}"
     os.makedirs(CACHE_DIR, exist_ok=True)
 
-    df = pd.read_csv(args.input)
+    df = pd.read_csv(INPUT_FILE)
     data_dict = get_data_dict(df, base_path=BASE_PATH, pathology_list=PATHOLOGIES)
 
     transforms=mn.transforms.Compose([
         mn.transforms.LoadImageD(keys="img", ensure_channel_first=False),
         bpu.EnsureGrayscaleD(keys="img"),
         mn.transforms.ResizeD(keys='img', size_mode="longest", mode="bilinear", spatial_size=IMG_SIZE, align_corners=False),
-        mn.transforms.ScaleIntensityRangePercentilesD(keys="img", lower=0, upper=100, b_min=-1, b_max=1, clip=True),
+        mn.transforms.ScaleIntensityD(keys="img", minv=-1, maxv=1),
         mn.transforms.SpatialPadD(keys='img', spatial_size=(IMG_SIZE, IMG_SIZE), mode="constant", constant_values=-1),
+        mn.transforms.NormalizeIntensityD(keys="img", subtrahend=0.0131, divisor=0.5782),
         mn.transforms.ToTensorD(keys=[*[pathology for pathology in PATHOLOGIES if pathology in df.columns]], dtype=torch.float),
         mn.transforms.AddChannelD(keys=[*[pathology for pathology in PATHOLOGIES if pathology in df.columns]]),
         mn.transforms.ConcatItemsD(keys=[*[pathology for pathology in PATHOLOGIES if pathology in df.columns]], name='cls'),
@@ -109,12 +184,7 @@ def main():
 
     results_dict = []
 
-    if len(PATHOLOGIES) == 14:
-        weights = glob(f"{WEIGHTS_PATH}/*/*.ckpt")
-        weights = [weight for weight in weights if '|' not in weight]
-    else:
-        weights = glob(f"{WEIGHTS_PATH}/*|{','.join(PATHOLOGIES)}/*.ckpt")
-
+    weights = get_weights_from_folders(WEIGHT_FOLDERS, config_path)
     for i, weight in enumerate(weights):
         model_name = "-".join(weight.split('/')[-2:]).split('_')[0]
         model.load_ckpt(weight, ema=True)
@@ -147,7 +217,7 @@ def main():
 
     results_df = pd.DataFrame(results_dict)
 
-    if args.auc_report:
+    if REPORT_AUC:
         auc_dict = {}
         
         for model_name in results_df['Model Name'].unique():

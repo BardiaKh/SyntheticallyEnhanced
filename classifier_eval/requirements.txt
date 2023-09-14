@@ -4,6 +4,7 @@ numpy
 tqdm
 scikit-learn
 argparse
+pyyaml
 
 # Custom packages
 git+https://github.com/BardiaKh/PytorchUtils.git#egg=bkh_pytorch_utils

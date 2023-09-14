@@ -1,0 +1,17 @@
+# ------------------------------
+# Important Note: 
+# All relative paths will be calculated from the `config.yaml` file location. 
+# If not desired, please pass absolute paths.
+# ------------------------------
+
+input: "path/to/input.csv"
+output: "/path/to/results.csv"
+batch_size: 32
+workers: 4
+base_path: null
+cuda_id: 0
+cache_dir: "./cache"
+pathologies: "all"
+weight_folders:
+  - "/path/to/weights_folder1"
+  - "/path/to/weights_folder2"
