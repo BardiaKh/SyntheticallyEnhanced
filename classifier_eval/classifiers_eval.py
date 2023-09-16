@@ -23,6 +23,7 @@ DEFAULT_CONFIG = {
     "cuda_id": 0,
     "pathologies": "all",
     "report_auc": True,
+    "equalize_hist": False,
     "weight_folders": [],
     "cache_dir": "./cache",
     "input": None
@@ -136,6 +137,7 @@ def main():
     CUDA_ID = config["cuda_id"]
     PATHOLOGIES = config["pathologies"] if config["pathologies"] != 'all' else ['Pleural Other', 'Fracture', 'Support Devices','Pleural Effusion','Pneumothorax','Atelectasis','Pneumonia','Consolidation', 'Edema','Lung Lesion', 'Lung Opacity', 'Cardiomegaly','Enlarged Cardiomediastinum', 'No Finding']
     REPORT_AUC = config["report_auc"]
+    EQUALIZE_HIST = config["equalize_hist"]
     WEIGHT_FOLDERS = config["weight_folders"]
 
     print(
@@ -155,10 +157,10 @@ def main():
     transforms=mn.transforms.Compose([
         mn.transforms.LoadImageD(keys="img", ensure_channel_first=False),
         bpu.EnsureGrayscaleD(keys="img"),
+        mn.transforms.HistogramNormalized(keys="img") if EQUALIZE_HIST else mn.transforms.IdentityD(keys="img"),
         mn.transforms.ResizeD(keys='img', size_mode="longest", mode="bilinear", spatial_size=IMG_SIZE, align_corners=False),
-        mn.transforms.ScaleIntensityD(keys="img", minv=-1, maxv=1),
+        mn.transforms.ScaleIntensityRangePercentilesD(keys="img", lower=0, upper=100, b_min=-1, b_max=1, clip=True),
         mn.transforms.SpatialPadD(keys='img', spatial_size=(IMG_SIZE, IMG_SIZE), mode="constant", constant_values=-1),
-        mn.transforms.NormalizeIntensityD(keys="img", subtrahend=0.0131, divisor=0.5782),
         mn.transforms.ToTensorD(keys=[*[pathology for pathology in PATHOLOGIES if pathology in df.columns]], dtype=torch.float),
         mn.transforms.AddChannelD(keys=[*[pathology for pathology in PATHOLOGIES if pathology in df.columns]]),
         mn.transforms.ConcatItemsD(keys=[*[pathology for pathology in PATHOLOGIES if pathology in df.columns]], name='cls'),

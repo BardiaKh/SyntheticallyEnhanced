@@ -12,6 +12,8 @@ base_path: null
 cuda_id: 0
 cache_dir: "./cache"
 pathologies: "all"
+report_auc: true
+equalize_hist: false
 weight_folders:
   - "/path/to/weights_folder1"
   - "/path/to/weights_folder2"

@@ -79,6 +79,8 @@ To run inference with our model, you will need to execute the `classifiers_eval.
 
 * `report_auc`: If set to `true`, the output AUC report file will be a seperate csv file, with the `_auc` suffix. Defaults to `true`.
 
+* `equalize_hist`: If set to `true`, histogram equalization will applied to the original image. Defaults to `false`.
+
 * `weight_folders`: **Required** field. A list of paths where the model weights are stored. You can specify multiple directories. For example:
     ```yaml
     weight_folders:
