@@ -237,9 +237,11 @@ def main():
                 true_labels = [true_labels_list[i] for i in valid_idx]
                 pred_scores = [pred_scores_list[i] for i in valid_idx]
 
-                auc_score = roc_auc_score(true_labels, pred_scores)
-                auc_dict[model_name][pathology] = auc_score
-                macro_auc_list.append(auc_score)
+                # in case all labels are -1
+                if true_labels:
+                    auc_score = roc_auc_score(true_labels, pred_scores)
+                    auc_dict[model_name][pathology] = auc_score
+                    macro_auc_list.append(auc_score)
             
             # Calculate macro-averaged AUC for this model
             macro_auc = sum(macro_auc_list) / len(macro_auc_list)
