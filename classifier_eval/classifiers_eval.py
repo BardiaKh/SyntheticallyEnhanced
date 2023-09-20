@@ -81,7 +81,7 @@ def get_weights_from_folders(weight_folders, config_path):
     for folder in weight_folders:
         folder = parse_path(folder, config_path)
         weights.extend(glob(f"{folder}/*.ckpt"))
-        
+    
     return weights
 
 def get_data_dict(df, base_path, pathology_list):
@@ -229,12 +229,17 @@ def main():
             macro_auc_list = []
             
             for pidx, pathology in enumerate(PATHOLOGIES):
-                if pathology in df.columns:
-                    true_labels = model_results['Labels'].apply(lambda x: x[pidx])
-                    pred_scores = model_results['Probs'].apply(lambda x: x[pidx])
-                    auc_score = roc_auc_score(true_labels, pred_scores)
-                    auc_dict[model_name][pathology] = auc_score
-                    macro_auc_list.append(auc_score)
+                true_labels_list = model_results['Labels'].apply(lambda x: x[pidx]).tolist()
+                pred_scores_list = model_results['Probs'].apply(lambda x: x[pidx]).tolist()
+
+                # Removing instances where the true label is -1 (uncertain cases)
+                valid_idx = [idx for idx, label in enumerate(true_labels_list) if label != -1]
+                true_labels = [true_labels_list[i] for i in valid_idx]
+                pred_scores = [pred_scores_list[i] for i in valid_idx]
+
+                auc_score = roc_auc_score(true_labels, pred_scores)
+                auc_dict[model_name][pathology] = auc_score
+                macro_auc_list.append(auc_score)
             
             # Calculate macro-averaged AUC for this model
             macro_auc = sum(macro_auc_list) / len(macro_auc_list)
