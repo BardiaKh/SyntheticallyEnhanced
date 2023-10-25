@@ -36,4 +36,4 @@ This will install all the necessary packages listed in the `requirements.txt` fi
 
 ## Running the Code
 
-A sample python file for training the model is provided in `classifier_training.py`. To structure your real data you can use `sample_train_data.csv`.  To use synthetic data augmentation, you can use the `sample_seeded_data.csv` as a template (the same file is used for DDPM-based image generation).
+A sample python file for training the model is provided in `classifier_training.py`. To structure your real data you can use `sample_train_data.csv`. To use synthetic data augmentation, you can use the `sample_seeded_data.csv` as a template (the same file is used for DDPM-based image generation).
