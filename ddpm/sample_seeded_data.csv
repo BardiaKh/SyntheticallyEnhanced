@@ -1,0 +1,5 @@
+Path,PID,Sex,Age,Frontal/Lateral,AP/PA,No Finding,Enlarged Cardiomediastinum,Cardiomegaly,Lung Opacity,Lung Lesion,Edema,Consolidation,Pneumonia,Atelectasis,Pneumothorax,Pleural Effusion,Pleural Other,Fracture,Support Devices,Race,Fold,Seed,ReplicaID,Save Path
+CheXpert-v1.0/train/patient00003/study1/view1_frontal.jpg,3,Male,41,Frontal,AP,0,0,0,0,0,1,0,0,0,0,0,0,0,0,White,2,1000,0,patient00003-study1-view1_frontal-1000
+CheXpert-v1.0/train/patient00005/study2/view1_frontal.jpg,5,Male,33,Frontal,AP,0,0,0,0,0,0,0,0,0,1,0,0,0,0,White,7,1001,0,patient00005-study2-view1_frontal-1001
+CheXpert-v1.0/train/patient00003/study1/view1_frontal.jpg,3,Male,41,Frontal,AP,0,0,0,0,0,1,0,0,0,0,0,0,0,0,White,2,1002,1,patient00003-study1-view1_frontal-1000
+CheXpert-v1.0/train/patient00005/study2/view1_frontal.jpg,5,Male,33,Frontal,AP,0,0,0,0,0,0,0,0,0,1,0,0,0,0,White,7,1003,1,patient00005-study2-view1_frontal-1001
