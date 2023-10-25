@@ -8,4 +8,4 @@ Model configs are present in the `mediffusion_config.yaml` file. Additionally, a
 
 ## Image Generation
 
-Sample generation script is located at `ddpm_inference.py`. To structure your data, you can use `sample_seeded_data.csv` as a template. 
+Sample generation script is located at `ddpm_inference.py`. To structure your data, you can use `sample_seeded_data.csv` as a template.
