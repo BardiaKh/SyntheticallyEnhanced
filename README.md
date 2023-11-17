@@ -1,5 +1,5 @@
 # Synthetically Enhanced: Unveiling Synthetic Data’s Potential in Medical Imaging Research
-[arxiv pre-print]([https://arxiv.com](https://arxiv.org/abs/2311.09402))
+[[arXiv pre-print](https://arxiv.org/abs/2311.09402)]
 
 <img src="https://i.ibb.co/cQtRz8T/SE-GA.jpg"/>
 
