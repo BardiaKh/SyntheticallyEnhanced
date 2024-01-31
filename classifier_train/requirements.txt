@@ -7,7 +7,7 @@ argparse
 pyyaml
 
 # Custom packages
-bkh-pytorch-utils
+bkh-pytorch-utils==0.9.5
 
 # Machine Learning packages
 monai
